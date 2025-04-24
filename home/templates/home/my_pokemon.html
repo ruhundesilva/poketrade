@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="p-3">
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col-md-6 mx-auto mb-3">
+                <h2>My PokeMon</h2>
+                <hr />
+            {% if user.is_authenticated %}
+                <p>
+                    Here is my current collection of Pokémon:
+                </p>
+            </div>
+            {% for poke in template_data.pokemon %}
+            <div class="col-md-6 mx-auto">
+                <div class="card mb-4">
+                    <img src="{{ poke.image }}" class="card-img-top" alt="{{ poke.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ poke.name }}</h5>
+                        <p class="card-text">Types: {{ poke.types|join:", " }}</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+                <p>You don't own any Pokémon yet.</p>
+            {% endfor %}
+            {% else %}
+                <p class="text-danger">{{ template_data.message }}</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
