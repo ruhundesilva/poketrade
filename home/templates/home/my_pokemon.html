@@ -25,6 +25,9 @@
             </div>
             {% empty %}
                 <p>You don't own any Pokémon yet.</p>
+                {% if template_data.can_get_starters %}
+                <a href="{% url 'get_starter_pokemon' %}" class="btn btn-primary mb-4">Get Starter Pokémon</a>
+                {% endif %}
             {% endfor %}
             {% else %}
                 <p class="text-danger">{{ template_data.message }}</p>
