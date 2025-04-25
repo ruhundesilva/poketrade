@@ -3,8 +3,9 @@ from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
-from django.shortcuts import redirect
-from .models import OwnedPokemon
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse
+from .models import OwnedPokemon, ListedPokemon
 import requests
 import random
 
@@ -20,9 +21,28 @@ def about(request):
     return render(request, 'home/about.html', {'template_data': template_data})
 
 def marketplace(request):
-    template_data = {}
-    template_data['title'] = 'Marketplace'
-    return render(request, 'home/marketplace.html', {'template_data': template_data})
+    listed = ListedPokemon.objects.all()
+    listed_data = []
+
+    for p in listed:
+        response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{p.name.lower()}')
+        if response.status_code == 200:
+            data = response.json()
+            listed_data.append({
+                'name': data['name'].capitalize(),
+                'image': data['sprites']['other']['official-artwork']['front_default'],
+                'types': [t['type']['name'] for t in data['types']],
+                'seller': p.seller.username,
+                'price': p.price
+            })
+
+    return render(request, 'home/marketplace.html', {
+        'template_data': {
+            'title': 'Marketplace',
+            'pokemon': listed_data
+        }
+    })
+
 
 def my_pokemon(request):
     owned = OwnedPokemon.objects.filter(user=request.user)
@@ -61,14 +81,41 @@ def get_starter_pokemon(request):
     return redirect('home.my_pokemon')
 
 @login_required
-def buy_pokemon(request, pokemon_name):
-    OwnedPokemon.objects.create(user=request.user, name=pokemon_name.lower())
+def list_pokemon_for_sale(request, name):
+    owned = get_object_or_404(OwnedPokemon, user=request.user, name=name.lower())
+
+    # Optional check: prevent duplicate listings
+    if not ListedPokemon.objects.filter(name=name.lower(), seller=request.user).exists():
+        ListedPokemon.objects.create(name=owned.name, seller=request.user)
+
+    # Remove from user's collection
+    owned.delete()
+
     return redirect('home.my_pokemon')
 
 @login_required
-def sell_pokemon(request, pokemon_name):
-    OwnedPokemon.objects.filter(user=request.user, name=pokemon_name.lower()).delete()
-    return redirect('home.my_pokemon')
+def pokemon_detail(request, name):
+    # Ensure the user owns this Pokémon
+    get_object_or_404(OwnedPokemon, user=request.user, name=name.lower())
+
+    # Fetch data from PokeAPI
+    response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{name.lower()}')
+    if response.status_code != 200:
+        return redirect('home.my_pokemon')
+
+    data = response.json()
+    pokemon_info = {
+        'name': data['name'].capitalize(),
+        'image': data['sprites']['other']['official-artwork']['front_default'],
+        'types': [t['type']['name'] for t in data['types']],
+        'height': data['height'],
+        'weight': data['weight'],
+        'base_experience': data['base_experience'],
+    }
+
+    return render(request, 'home/pokemon_detail.html', {
+        'pokemon': pokemon_info
+    })
 
 
 def signup(request):

@@ -15,13 +15,15 @@
             </div>
             {% for poke in template_data.pokemon %}
             <div class="col-md-6 mx-auto">
-                <div class="card mb-4">
-                    <img src="{{ poke.image }}" class="card-img-top" alt="{{ poke.name }}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ poke.name }}</h5>
-                        <p class="card-text">Types: {{ poke.types|join:", " }}</p>
+                <a href="{% url 'pokemon_detail' poke.name %}" style="text-decoration: none; color: inherit;">
+                    <div class="card mb-4">
+                        <img src="{{ poke.image }}" class="card-img-top" alt="{{ poke.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ poke.name }}</h5>
+                            <p class="card-text">Types: {{ poke.types|join:", " }}</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
             {% empty %}
                 <p>You don't own any Pokémon yet.</p>
