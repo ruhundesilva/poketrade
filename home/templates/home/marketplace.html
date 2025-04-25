@@ -11,10 +11,48 @@
                     Here is where you can buy and sell Pokémon
                 </p>
             </div>
-            <div class="col-md-6 mx-auto mb-3 text-center">
-                <img src="{% static 'img/about.jpg' %}" class="max-width-100" alt="about" />
-            </div>
+            {% for poke in template_data.pokemon %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ poke.image }}" class="card-img-top" alt="{{ poke.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title text-capitalize">{{ poke.name }}</h5>
+                            <p>Types: {{ poke.types|join:", " }}</p>
+                            <p>Seller: {{ poke.seller }}</p>
+                            <p>Price: ${{ poke.price }}</p>
+                            <!-- You can add a "Buy" button here later -->
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
         </div>
     </div>
 </div>
 {% endblock content %}
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4 text-center">
+    <h2>{{ template_data.title }}</h2>
+    <hr />
+    <p>Here is where you can buy and sell Pokémon</p>
+
+    <div class="row justify-content-center">
+        {% for poke in template_data.pokemon %}
+            <div class="col-md-4 mb-4 d-flex justify-content-center">
+                <div class="card" style="width: 18rem;">
+                    <img src="{{ poke.image }}" class="card-img-top" alt="{{ poke.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title text-capitalize">{{ poke.name }}</h5>
+                        <p>Types: {{ poke.types|join:", " }}</p>
+                        <p>Seller: {{ poke.seller }}</p>
+                        <p>Price: ${{ poke.price }}</p>
+                        <!-- Buy button goes here later -->
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -9,7 +9,7 @@ urlpatterns = [
     path('signup/', views.signup, name='home.signup'),
     path('login/', views.login, name='home.login'),
     path('logout/', views.logout, name='home.logout'),
-    path('buy/<str:name>/', views.buy_pokemon, name='buy_pokemon'),
-    path('sell/<str:name>/', views.sell_pokemon, name='sell_pokemon'),
     path('get-starters/', views.get_starter_pokemon, name='get_starter_pokemon'),
+    path('my-pokemon/<str:name>/', views.pokemon_detail, name='pokemon_detail'),
+    path('sell/<str:name>/', views.list_pokemon_for_sale, name='list_pokemon_for_sale'),
 ]
