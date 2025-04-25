@@ -6,6 +6,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import redirect
 from .models import OwnedPokemon
 import requests
+import random
 
 
 def index(request):
@@ -24,15 +25,6 @@ def marketplace(request):
     return render(request, 'home/marketplace.html', {'template_data': template_data})
 
 def my_pokemon(request):
-    if not request.user.is_authenticated:
-        return render(request, 'home/my_pokemon.html', {
-            'template_data': {
-                'title': 'My PokeMon',
-                'pokemon': [],
-                'message': 'Please log in to view your Pokémon collection.'
-            }
-        })
-
     owned = OwnedPokemon.objects.filter(user=request.user)
     pokemon_data = []
 
@@ -48,10 +40,36 @@ def my_pokemon(request):
 
     template_data = {
         'title': 'My PokeMon',
-        'pokemon': pokemon_data
+        'pokemon': pokemon_data,
+        'can_get_starters': owned.count() == 0
     }
 
     return render(request, 'home/my_pokemon.html', {'template_data': template_data})
+
+@login_required
+def get_starter_pokemon(request):
+    if OwnedPokemon.objects.filter(user=request.user).exists():
+        return redirect('home.my_pokemon')  # Already has Pokémon
+
+    starter_ids = random.sample(range(1, 151), 3)  # Random IDs from Gen 1
+    for poke_id in starter_ids:
+        response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{poke_id}')
+        if response.status_code == 200:
+            data = response.json()
+            OwnedPokemon.objects.create(user=request.user, name=data['name'])
+
+    return redirect('home.my_pokemon')
+
+@login_required
+def buy_pokemon(request, pokemon_name):
+    OwnedPokemon.objects.create(user=request.user, name=pokemon_name.lower())
+    return redirect('home.my_pokemon')
+
+@login_required
+def sell_pokemon(request, pokemon_name):
+    OwnedPokemon.objects.filter(user=request.user, name=pokemon_name.lower()).delete()
+    return redirect('home.my_pokemon')
+
 
 def signup(request):
     template_data = {}
