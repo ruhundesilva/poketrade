@@ -185,21 +185,70 @@ class ResetPasswordView(SuccessMessageMixin, PasswordResetView):
                       "please make sure you've entered the address you registered with, and check your spam folder."
     success_url = reverse_lazy('accounts.login')
 
+@login_required
 def add_to_cart(request, pokemon_id):
     cart = request.session.get('cart', [])
-    if pokemon_id not in cart:
-        cart.append(pokemon_id)
-    request.session['cart'] = cart
-    return redirect('marketplace')
+
+    # Find the Pokémon from ListedPokemon
+    poke = get_object_or_404(ListedPokemon, id=pokemon_id)
+
+    # Fetch the image from PokeAPI
+    response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{poke.name.lower()}')
+    if response.status_code == 200:
+        data = response.json()
+        image_url = data['sprites']['other']['official-artwork']['front_default']
+    else:
+        image_url = ''  # fallback in case PokeAPI fails
+
+    # Store FULL Pokémon info
+    poke_data = {
+        'id': poke.id,
+        'name': poke.name.capitalize(),
+        'price': poke.price,
+        'image': image_url,
+    }
+
+    # Avoid duplicate entries
+    if poke_data not in cart:
+        cart.append(poke_data)
+        request.session['cart'] = cart
+
+    return redirect('cart')
 
 def cart_view(request):
-    cart = request.session.get('cart', [])
-    pokemons = ListedPokemon.objects.filter(id__in=cart)
-    return render(request, 'home/cart.html', {'cart_pokemon': pokemons})
+    cart_pokemon = request.session.get('cart', [])
+    return render(request, 'home/cart.html', {'cart_pokemon': cart_pokemon})
+
+@login_required
+def purchase_pokemon(request, pokemon_id):
+    if request.method == 'POST':
+        poke = get_object_or_404(ListedPokemon, id=pokemon_id)
+        
+        # Add to user's owned Pokémon
+        OwnedPokemon.objects.create(user=request.user, name=poke.name)
+
+        # Remove from marketplace
+        poke.delete()
+
+        # Remove from cart session
+        cart = request.session.get('cart', [])
+        cart = [item for item in cart if item['id'] != pokemon_id]
+        request.session['cart'] = cart
+
+        return redirect('home.my_pokemon')
 
 def purchase(request):
     request.session['cart'] = []
     return render(request, 'purchase_success.html')
+
+@login_required
+def remove_from_cart(request, pokemon_id):
+    if request.method == 'POST':
+        cart = request.session.get('cart', [])
+        cart = [item for item in cart if item['id'] != pokemon_id]
+        request.session['cart'] = cart
+
+        return redirect('cart')
 
 def marketplace_pokemon_detail(request, name):
     # Find the listed Pokémon

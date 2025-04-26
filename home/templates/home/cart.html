@@ -1,11 +1,44 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Your Cart</h2>
-<ul>
-  {% for poke in cart_pokemon %}
-    <li>{{ poke.name }} — ${{ poke.price }}</li>
-  {% endfor %}
-</ul>
+<div class="container py-4">
+    <h2 class="text-center mb-4">🛒 Your Cart</h2>
+    <hr>
 
-<a href="{% url 'purchase' %}" class="btn btn-success">Purchase</a>
+    {% if cart_pokemon %}
+        <ul class="list-group">
+            {% for poke in cart_pokemon %}
+            <li class="list-group-item d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <img src="{{ poke.image }}" alt="{{ poke.name }}" class="rounded" style="width: 80px; height: 80px; object-fit: contain; margin-right: 15px;">
+                    <div class="text-start">
+                        <h5 class="mb-1">{{ poke.name }} (ID: {{ poke.id }})</h5>
+                        <p class="mb-1">Price: ${{ poke.price }}</p>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column">
+                    <form method="post" action="{% url 'purchase_pokemon' poke.id %}" class="mb-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">
+                            Purchase Now
+                        </button>
+                    </form>
+
+                    <form method="post" action="{% url 'remove_from_cart' poke.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            Remove from Cart
+                        </button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="text-center">
+            <p class="lead">Your cart is currently empty.</p>
+            <a href="{% url 'home.marketplace' %}" class="btn btn-primary">Browse Marketplace</a>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

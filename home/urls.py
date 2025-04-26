@@ -20,4 +20,6 @@ urlpatterns = [
     path("cart/", views.cart_view, name="cart"),
     path('purchase/', views.purchase, name='purchase'),
     path('marketplace/<str:name>/', views.marketplace_pokemon_detail, name='marketplace_pokemon_detail'),
+    path('purchase-pokemon/<int:pokemon_id>/', views.purchase_pokemon, name='purchase_pokemon'),
+    path('remove-from-cart/<int:pokemon_id>/', views.remove_from_cart, name='remove_from_cart'),
 ]
