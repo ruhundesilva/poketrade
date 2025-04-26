@@ -22,4 +22,5 @@ urlpatterns = [
     path('marketplace/<str:name>/', views.marketplace_pokemon_detail, name='marketplace_pokemon_detail'),
     path('purchase-pokemon/<int:pokemon_id>/', views.purchase_pokemon, name='purchase_pokemon'),
     path('remove-from-cart/<int:pokemon_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('manage-listed/<int:pokemon_id>/', views.manage_listed_pokemon, name='manage_listed_pokemon'),
 ]

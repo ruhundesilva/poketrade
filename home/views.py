@@ -54,21 +54,39 @@ def marketplace(request):
 @login_required(login_url='/login/')
 def my_pokemon(request):
     owned = OwnedPokemon.objects.filter(user=request.user)
-    pokemon_data = []
+    listed = ListedPokemon.objects.filter(seller=request.user)
 
+    owned_pokemon_data = []
+    listed_pokemon_data = []
+
+    # Owned Pokémon
     for poke in owned:
         response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{poke.name.lower()}')
         if response.status_code == 200:
             data = response.json()
-            pokemon_data.append({
+            owned_pokemon_data.append({
                 'name': data['name'].capitalize(),
                 'image': data['sprites']['other']['official-artwork']['front_default'],
                 'types': [t['type']['name'] for t in data['types']],
             })
 
+    # Listed Pokémon
+    for poke in listed:
+        response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{poke.name.lower()}')
+        if response.status_code == 200:
+            data = response.json()
+            listed_pokemon_data.append({
+                'id': poke.id,
+                'name': data['name'].capitalize(),
+                'image': data['sprites']['other']['official-artwork']['front_default'],
+                'types': [t['type']['name'] for t in data['types']],
+                'price': poke.price,
+            })
+
     template_data = {
         'title': 'My PokeMon',
-        'pokemon': pokemon_data,
+        'owned_pokemon': owned_pokemon_data,
+        'listed_pokemon': listed_pokemon_data,
         'can_get_starters': owned.count() == 0
     }
 
@@ -273,3 +291,42 @@ def marketplace_pokemon_detail(request, name):
     }
 
     return render(request, 'home/marketplace_pokemon_detail.html', {'pokemon': pokemon_info})
+
+@login_required
+def manage_listed_pokemon(request, pokemon_id):
+    poke = get_object_or_404(ListedPokemon, id=pokemon_id, seller=request.user)
+
+    # Fetch full Pokémon details
+    response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{poke.name.lower()}')
+    if response.status_code == 200:
+        data = response.json()
+        pokemon_info = {
+            'image': data['sprites']['other']['official-artwork']['front_default'],
+            'types': [t['type']['name'] for t in data['types']],
+            'height': data['height'],
+            'weight': data['weight'],
+            'base_experience': data['base_experience'],
+        }
+    else:
+        pokemon_info = {
+            'image': '',
+            'types': [],
+            'height': '',
+            'weight': '',
+            'base_experience': '',
+        }
+
+    if request.method == 'POST':
+        if 'update_price' in request.POST:
+            new_price = request.POST.get('price')
+            if new_price and new_price.isdigit() and int(new_price) > 0:
+                poke.price = int(new_price)
+                poke.save()
+                return redirect('home.my_pokemon')
+
+        elif 'remove_listing' in request.POST:
+            OwnedPokemon.objects.create(user=request.user, name=poke.name)
+            poke.delete()
+            return redirect('home.my_pokemon')
+
+    return render(request, 'home/manage_listed_pokemon.html', {'pokemon': poke, 'pokemon_info': pokemon_info})

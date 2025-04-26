@@ -13,7 +13,8 @@
                     Here is my current collection of Pokémon:
                 </p>
             </div>
-            {% for poke in template_data.pokemon %}
+            <h3>My Owned Pokémon</h3>
+            {% for poke in template_data.owned_pokemon %}
             <div class="col-md-6 mx-auto">
                 <a href="{% url 'pokemon_detail' poke.name %}" style="text-decoration: none; color: inherit;">
                     <div class="card mb-4">
@@ -30,6 +31,26 @@
                 {% if template_data.can_get_starters %}
                 <a href="{% url 'get_starter_pokemon' %}" class="btn btn-primary mb-4">Get Starter Pokémon</a>
                 {% endif %}
+            {% endfor %}
+
+            <hr>
+
+            <h3>Pokémon I'm Selling on the Marketplace</h3>
+            {% for poke in template_data.listed_pokemon %}
+            <div class="col-md-6 mx-auto">
+                <a href="{% url 'manage_listed_pokemon' poke.id %}" style="text-decoration: none; color: inherit;">
+                    <div class="card mb-4 border-warning">
+                        <img src="{{ poke.image }}" class="card-img-top" alt="{{ poke.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ poke.name }} - ${{ poke.price }}</h5>
+                            <p class="card-text">Types: {{ poke.types|join:", " }}</p>
+                            <p class="text-warning">Click to manage this listing</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+                <p>You have no Pokémon listed for sale.</p>
             {% endfor %}
             {% else %}
                 <p class="text-danger">{{ template_data.message }}</p>

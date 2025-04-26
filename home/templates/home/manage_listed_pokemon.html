@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container text-center py-4">
+    <h2>Manage Listing for {{ pokemon.name|capfirst }}</h2>
+    <img src="{{ pokemon_info.image }}" alt="{{ pokemon.name }}" class="img-fluid" style="max-height: 300px;">
+
+    <div class="mt-4 mb-5">
+        <p><strong>Types:</strong> {{ pokemon_info.types|join:", " }}</p>
+        <p><strong>Height:</strong> {{ pokemon_info.height }}</p>
+        <p><strong>Weight:</strong> {{ pokemon_info.weight }}</p>
+        <p><strong>Base XP:</strong> {{ pokemon_info.base_experience }}</p>
+    </div>
+
+    <hr>
+
+    <form method="post" class="mt-4">
+        {% csrf_token %}
+        <div class="form-group mb-4">
+            <label for="price" class="form-label h4">💰 Update Your Selling Price</label>
+            <div class="input-group input-group-lg justify-content-center">
+                <span class="input-group-text">₽</span>
+                <input type="number" name="price" id="price" class="form-control text-center" value="{{ pokemon.price }}" required min="1" style="max-width: 250px;">
+            </div>
+            <small class="form-text text-muted">Price is in Pokédollars (₽)</small>
+        </div>
+
+        <button type="submit" name="update_price" class="btn btn-success btn-lg px-5 py-2 mt-3">
+            <i class="fas fa-sync-alt"></i> Update Price
+        </button>
+    </form>
+
+    <hr class="my-5">
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="remove_listing" class="btn btn-danger btn-lg px-5 py-2">
+            <i class="fas fa-times"></i> Remove from Marketplace
+        </button>
+    </form>
+
+</div>
+
+{% endblock %}
