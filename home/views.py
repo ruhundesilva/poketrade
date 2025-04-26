@@ -44,6 +44,8 @@ def marketplace(request):
     })
 
 
+
+@login_required(login_url='/login/')
 def my_pokemon(request):
     owned = OwnedPokemon.objects.filter(user=request.user)
     pokemon_data = []
