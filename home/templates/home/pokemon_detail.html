@@ -8,7 +8,20 @@
     <p><strong>Weight:</strong> {{ pokemon.weight }}</p>
     <p><strong>Base XP:</strong> {{ pokemon.base_experience }}</p>
 
-    <a href="{% url 'list_pokemon_for_sale' pokemon.name|lower %}" class="btn btn-warning mt-3">Put {{ pokemon.name }} up for sale</a>
-    
+    <!-- <a href="{% url 'list_pokemon_for_sale' pokemon.name|lower %}" class="btn btn-warning mt-3">Put {{ pokemon.name }} up for sale</a> -->
+    <form method="post" action="{% url 'list_pokemon_for_sale' pokemon.name|lower %}" class="mt-4">
+        {% csrf_token %}
+        <div class="form-group mb-4">
+            <label for="price" class="form-label h4">💰 Set Your Selling Price</label>
+            <div class="input-group input-group-lg justify-content-center">
+                <span class="input-group-text">₽</span>
+                <input type="number" name="price" id="price" class="form-control text-center" required min="1" placeholder="Enter amount" style="max-width: 250px;">
+            </div>
+            <small class="form-text text-muted">Price is in Pokédollars (₽)</small>
+        </div>
+        <button type="submit" class="btn btn-success btn-lg px-5 py-2 mt-3">
+            <i class="fas fa-coins"></i> List {{ pokemon.name }} for Sale
+        </button>
+    </form>
 </div>
 {% endblock %}

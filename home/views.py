@@ -14,6 +14,7 @@ from django.contrib.auth.views import PasswordResetView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from .models import ListedPokemon
+from .forms import ListPokemonForm
 
 def index(request):
     template_data = {}
@@ -91,13 +92,17 @@ def get_starter_pokemon(request):
 def list_pokemon_for_sale(request, name):
     owned = get_object_or_404(OwnedPokemon, user=request.user, name=name.lower())
 
-    # Optional check: prevent duplicate listings
-    if not ListedPokemon.objects.filter(name=name.lower(), seller=request.user).exists():
-        ListedPokemon.objects.create(name=owned.name, seller=request.user)
-
-    # Remove from user's collection
-    owned.delete()
-
+    if request.method == 'POST':
+        price = request.POST.get('price')
+        if price and price.isdigit():
+            price = int(price)
+            if price > 0:
+                ListedPokemon.objects.create(name=owned.name, seller=request.user, price=price)
+                owned.delete()
+                return redirect('home.my_pokemon')
+        # Optional: handle error if price is invalid (you could add a message)
+    
+    # If not POST or invalid POST, just redirect
     return redirect('home.my_pokemon')
 
 @login_required

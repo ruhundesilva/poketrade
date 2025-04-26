@@ -2,6 +2,10 @@ from django.contrib.auth.forms import UserCreationForm
 from django.forms.utils import ErrorList
 from django.utils.safestring import mark_safe
 from django.contrib.auth.models import User
+from django import forms
+
+class ListPokemonForm(forms.Form):
+    price = forms.IntegerField(min_value=1, label='Price', widget=forms.NumberInput(attrs={'class': 'form-control'}))
 
 class CustomErrorList(ErrorList):
     def __str__(self):
