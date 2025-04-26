@@ -11,7 +11,8 @@ import random
 from django.urls import reverse_lazy
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.messages.views import SuccessMessageMixin
-
+from django.shortcuts import redirect
+from .models import ListedPokemon
 
 def index(request):
     template_data = {}
@@ -177,3 +178,19 @@ class ResetPasswordView(SuccessMessageMixin, PasswordResetView):
                       " If you don't receive an email, " \
                       "please make sure you've entered the address you registered with, and check your spam folder."
     success_url = reverse_lazy('accounts.login')
+
+def add_to_cart(request, pokemon_id):
+    cart = request.session.get('cart', [])
+    if pokemon_id not in cart:
+        cart.append(pokemon_id)
+    request.session['cart'] = cart
+    return redirect('marketplace')
+
+def cart_view(request):
+    cart = request.session.get('cart', [])
+    pokemons = ListedPokemon.objects.filter(id__in=cart)
+    return render(request, 'home/cart.html', {'cart_pokemon': pokemons})
+
+def purchase(request):
+    request.session['cart'] = []
+    return render(request, 'purchase_success.html')
