@@ -17,5 +17,7 @@ urlpatterns = [
     path('login/password-reset/', ResetPasswordView.as_view(), name='password_reset'),
     path('login/resetpass.html/', views.resetpass, name='accounts.resetpass'),
     path('add-to-cart/<int:pokemon_id>/', views.add_to_cart, name='add_to_cart'),
-    path("cart/", views.cart_view, name="cart")
+    path("cart/", views.cart_view, name="cart"),
+    path('purchase/', views.purchase, name='purchase'),
+    path('marketplace/<str:name>/', views.marketplace_pokemon_detail, name='marketplace_pokemon_detail'),
 ]

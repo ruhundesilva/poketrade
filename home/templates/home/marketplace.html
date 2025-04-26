@@ -10,17 +10,17 @@
     <div class="row justify-content-center">
         {% for poke in template_data.pokemon %}
             <div class="col-md-4 mb-4 d-flex justify-content-center">
-                <div class="card" style="width: 18rem;">
-                    <img src="{{ poke.image }}" class="card-img-top" alt="{{ poke.name }}">
-                    <div class="card-body">
-                        <h5 class="card-title text-capitalize">{{ poke.name }}</h5>
-                        <p>Types: {{ poke.types|join:", " }}</p>
-                        <p>Seller: {{ poke.seller }}</p>
-                        <p>Price: ${{ poke.price }}</p>
-                            {% csrf_token %}
-                        </form>
+                <a href="{% url 'marketplace_pokemon_detail' poke.name|lower %}" class="text-decoration-none text-dark">
+                    <div class="card" style="width: 18rem;">
+                        <img src="{{ poke.image }}" class="card-img-top" alt="{{ poke.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title text-capitalize">{{ poke.name }}</h5>
+                            <p>Types: {{ poke.types|join:", " }}</p>
+                            <p>Seller: {{ poke.seller }}</p>
+                            <p>Price: ${{ poke.price }}</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         {% empty %}
             <p>No Pokémon are currently listed for trade.</p>

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container text-center py-4">
+    <h2>{{ pokemon.name }}</h2>
+    <img src="{{ pokemon.image }}" alt="{{ pokemon.name }}" class="img-fluid" style="max-height: 300px;">
+    <p><strong>Types:</strong> {{ pokemon.types|join:", " }}</p>
+    <p><strong>Height:</strong> {{ pokemon.height }}</p>
+    <p><strong>Weight:</strong> {{ pokemon.weight }}</p>
+    <p><strong>Base XP:</strong> {{ pokemon.base_experience }}</p>
+    <p><strong>Seller:</strong> {{ pokemon.seller }}</p>
+    <p><strong>Price:</strong> ${{ pokemon.price }}</p>
+
+    <a href="{% url 'add_to_cart' pokemon.id %}" class="btn btn-primary mt-3">Add to Cart</a>
+</div>
+{% endblock %}

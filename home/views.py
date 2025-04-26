@@ -200,3 +200,27 @@ def cart_view(request):
 def purchase(request):
     request.session['cart'] = []
     return render(request, 'purchase_success.html')
+
+def marketplace_pokemon_detail(request, name):
+    # Find the listed Pokémon
+    poke = get_object_or_404(ListedPokemon, name=name.lower())
+
+    # Fetch extra data from PokeAPI
+    response = requests.get(f'https://pokeapi.co/api/v2/pokemon/{name.lower()}')
+    if response.status_code != 200:
+        return redirect('home.marketplace')
+
+    data = response.json()
+    pokemon_info = {
+        'id': poke.id,
+        'name': data['name'].capitalize(),
+        'image': data['sprites']['other']['official-artwork']['front_default'],
+        'types': [t['type']['name'] for t in data['types']],
+        'height': data['height'],
+        'weight': data['weight'],
+        'base_experience': data['base_experience'],
+        'seller': poke.seller.username,
+        'price': poke.price,
+    }
+
+    return render(request, 'home/marketplace_pokemon_detail.html', {'pokemon': pokemon_info})
