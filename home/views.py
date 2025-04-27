@@ -27,7 +27,13 @@ def about(request):
     return render(request, 'home/about.html', {'template_data': template_data})
 
 def marketplace(request):
-    listed = ListedPokemon.objects.all()
+    query = request.GET.get('q')  # Get search input from URL if exists
+
+    if query:
+        listed = ListedPokemon.objects.filter(name__icontains=query)
+    else:
+        listed = ListedPokemon.objects.all()
+
     listed_data = []
 
     for p in listed:
@@ -45,7 +51,8 @@ def marketplace(request):
     return render(request, 'home/marketplace.html', {
         'template_data': {
             'title': 'Marketplace',
-            'pokemon': listed_data
+            'pokemon': listed_data,
+            'search_query': query or ''
         }
     })
 
