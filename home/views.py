@@ -124,7 +124,7 @@ def list_pokemon_for_sale(request, name):
             price = int(price)
             if price > 0:
                 ListedPokemon.objects.create(name=owned.name, seller=request.user, price=price)
-                
+
                 notification_message = f'You have listed {name} for sell at price {price}!'
                 Notification.objects.create(user=request.user, message=notification_message)
                 
@@ -366,3 +366,58 @@ def home_index(request):
         'notifications': notifications,
         'user': request.user  # Pass the user explicitly to the template
     })
+
+from django.shortcuts import render
+from django.contrib.auth.models import User
+
+
+def all_users(request):
+    # Fetch all users except the currently logged-in user
+    users = User.objects.exclude(id=request.user.id)
+
+    # Fetch the form for the page
+    form = CustomUserCreationForm()
+
+    # Return the template with users and form data
+    return render(request, 'home/pokemon_detail.html', {
+        'users': users,
+        'form': form
+    })
+from django.shortcuts import get_object_or_404, redirect
+from .models import OwnedPokemon, User, Notification
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def transfer_pokemon(request):
+    if request.method == 'POST':
+        # Get the selected user and Pokémon to transfer
+        selected_user_id = request.POST.get('user')  # User selected in the form
+        pokemon_id = request.POST.get('pokemon_id')  # Pokémon being transferred
+
+        # Fetch the selected user and the Pokémon to transfer
+        selected_user = get_object_or_404(User, id=selected_user_id)
+        pokemon_to_transfer = get_object_or_404(OwnedPokemon, id=pokemon_id, user=request.user)
+
+        # Transfer the Pokémon
+        pokemon_to_transfer.user = selected_user
+        pokemon_to_transfer.save()
+
+        # Notify both users about the transfer
+        notification_message = f'{request.user.username} has transferred {pokemon_to_transfer.name} to you.'
+        Notification.objects.create(user=selected_user, message=notification_message)
+
+        # Send a notification to the sender as well
+        notification_message = f'You have successfully transferred {pokemon_to_transfer.name} to {selected_user.username}.'
+        Notification.objects.create(user=request.user, message=notification_message)
+
+        return redirect('home.my_pokemon')  # Redirect back to the user's Pokémon page
+
+    else:
+        # If the request is not POST, simply show the transfer form
+        users = User.objects.exclude(id=request.user.id)  # Fetch all users except the current one
+        pokemon_to_transfer = OwnedPokemon.objects.filter(user=request.user)
+
+        return render(request, 'home/transfer_pokemon.html', {
+            'users': users,
+            'pokemon_to_transfer': pokemon_to_transfer
+        })
