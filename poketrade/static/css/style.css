@@ -34,3 +34,44 @@
 .ms-footer-bottom a:hover {
     color: #fff;
 }
+#notificationPopup {
+    position: fixed;
+    top: 80px;
+    right: -350px;
+    width: 300px;
+    max-height: 400px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    border: 1px solid #ddd;
+    overflow-y: auto;
+    transition: right 0.3s ease;
+    z-index: 1050;
+  }
+  
+  #notificationPopup.active {
+    right: 20px;
+  }
+  
+  #notificationPopup header {
+    background: #f5f5f5;
+    padding: 10px;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .notification-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+  }
+  
+  .notification-item:last-child {
+    border-bottom: none;
+  }
+  
+  .closeBtn {
+    float: right;
+    color: red;
+    cursor: pointer;
+  }
+  

@@ -10,7 +10,7 @@
         <meta name="viewport" content="width=device-width,initial-scale=1" />
     </head>
 
-    <body>
+    <body style="display: flex; flex-direction: column; min-height: 100vh;">
         <!-- Header -->
         <nav class="p-3 navbar navbar-dark bg-dark navbar-expand-lg">
             <div class="container">
@@ -44,10 +44,35 @@
             </div>
         </nav>
         <!-- Header -->
-        <div>
+
+        <!-- Notification Container (Fixed and Centered) -->
+        <div id="notificationContainer">
+            <div id="notificationBox">
+                <header>
+                    Recent Activity
+                    <span class="closeBtn" onclick="closeNotifications()">×</span>
+                </header>
+
+                {% block notifications %}
+                <!-- Notifications will be inserted here -->
+                {% for notification in notifications %}
+                    <div class="notification-item">
+                        {{ notification.message }}
+                    </div>
+                {% empty %}
+                    <div class="notification-item">
+                        No notifications.
+                    </div>
+                {% endfor %}
+                {% endblock %}
+            </div>
+        </div>
+
+        <div style="flex-grow: 1;">
             {% block content %}
             {% endblock content %}
         </div>
+
         <!-- Footer -->
         <section class="p-3 ms-footer bg-dark d-md-block">
             <div class="container">
@@ -89,11 +114,19 @@
             </div>
         </section>
         <!-- Footer-->
+
         <script>
-            function togglePopup() {
-                const popup = document.getElementById("notificationPopup");
-                popup.classList.toggle("active");
+            // Close notifications box
+            function closeNotifications() {
+                const notificationContainer = document.getElementById("notificationContainer");
+                notificationContainer.style.display = 'none'; // Hide the notification box
             }
+
+            // Optionally, open the notification container automatically when the page loads
+            window.onload = function() {
+                const notificationContainer = document.getElementById("notificationContainer");
+                notificationContainer.style.display = 'block'; // Show the notification box
+            };
         </script>
     </body>
 </html>

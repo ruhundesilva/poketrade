@@ -2,11 +2,12 @@ from django.shortcuts import render
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .forms import CustomUserCreationForm  # assuming your custom form is in forms.py
+from .forms import CustomUserCreationForm  
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from .models import OwnedPokemon, ListedPokemon
+from .models import Notification
 import requests
 import random
 from django.urls import reverse_lazy
@@ -123,6 +124,10 @@ def list_pokemon_for_sale(request, name):
             price = int(price)
             if price > 0:
                 ListedPokemon.objects.create(name=owned.name, seller=request.user, price=price)
+                
+                notification_message = f'You have listed {name} for sell at price {price}!'
+                Notification.objects.create(user=request.user, message=notification_message)
+                
                 owned.delete()
                 return redirect('home.my_pokemon')
         # Optional: handle error if price is invalid (you could add a message)
@@ -163,7 +168,7 @@ def signup(request):
         return render(request, 'home/signup.html',
             {'template_data': template_data})
     elif request.method == 'POST':
-        form = CustomUserCreationForm()(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('home.index')
@@ -260,6 +265,9 @@ def purchase_pokemon(request, pokemon_id):
         cart = [item for item in cart if item['id'] != pokemon_id]
         request.session['cart'] = cart
 
+        notification_message = f'You have successfully purchased {poke.name}!'
+        Notification.objects.create(user=request.user, message=notification_message)
+
         return redirect('home.my_pokemon')
 
 def purchase(request):
@@ -329,11 +337,32 @@ def manage_listed_pokemon(request, pokemon_id):
             if new_price and new_price.isdigit() and int(new_price) > 0:
                 poke.price = int(new_price)
                 poke.save()
+                notification_message = f'You have updated the price of {poke.name}!'
+                Notification.objects.create(user=request.user, message=notification_message)
                 return redirect('home.my_pokemon')
 
         elif 'remove_listing' in request.POST:
             OwnedPokemon.objects.create(user=request.user, name=poke.name)
+            notification_message = f'You have successfully purchased {poke.name}!'
+            Notification.objects.create(user=request.user, message=notification_message)
             poke.delete()
             return redirect('home.my_pokemon')
 
     return render(request, 'home/manage_listed_pokemon.html', {'pokemon': poke, 'pokemon_info': pokemon_info})
+
+def notification_view(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:10]
+    return render(request, 'home/notifications.html', {'notifications': notifications})
+
+from django.shortcuts import render
+from .models import Notification
+
+def home_index(request):
+    notifications = []
+    if request.user.is_authenticated:
+        notifications = Notification.objects.filter(user=request.user).order_by('-created_at')[:10]
+
+    return render(request, 'home/index.html', {
+        'notifications': notifications,
+        'user': request.user  # Pass the user explicitly to the template
+    })
