@@ -24,5 +24,6 @@ urlpatterns = [
     path('remove-from-cart/<int:pokemon_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('manage-listed/<int:pokemon_id>/', views.manage_listed_pokemon, name='manage_listed_pokemon'),
     path('notifications/', views.notification_view, name='home.notifications'),
-    path('home/transfer/<str:name>/', views.transfer_pokemon, name='transfer_pokemon')
+    path('home/transfer/<str:name>/', views.transfer_pokemon, name='transfer_pokemon'),
+    path('chat/', views.chat_room, name='chat_room')
 ]

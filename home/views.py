@@ -16,6 +16,9 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from .models import ListedPokemon
 from .forms import ListPokemonForm
+from django.contrib.auth.models import User
+
+from .models import Message
 
 def index(request):
     template_data = {}
@@ -124,7 +127,7 @@ def list_pokemon_for_sale(request, name):
             price = int(price)
             if price > 0:
                 ListedPokemon.objects.create(name=owned.name, seller=request.user, price=price)
-
+                
                 notification_message = f'You have listed {name} for sell at price {price}!'
                 Notification.objects.create(user=request.user, message=notification_message)
                 
@@ -367,27 +370,17 @@ def home_index(request):
         'user': request.user  # Pass the user explicitly to the template
     })
 
-from django.shortcuts import render
-from django.contrib.auth.models import User
-
-
-def all_users(request):
-    # Fetch all users except the currently logged-in user
-    users = User.objects.exclude(id=request.user.id)
-
-    # Fetch the form for the page
-    form = CustomUserCreationForm()
-
-    # Return the template with users and form data
-    return render(request, 'home/pokemon_detail.html', {
-        'users': users,
-        'form': form
-    })
-from django.shortcuts import get_object_or_404, redirect
-from .models import OwnedPokemon, User, Notification
-from django.contrib.auth.decorators import login_required
-
 @login_required
+def chat_room(request):
+    if request.method == "POST":
+        text = request.POST.get("text")
+        if text:
+            Message.objects.create(user=request.user, text=text)
+            return redirect('chat_room')  # Redirect to refresh page after posting
+    
+    messages = Message.objects.order_by('timestamp')  # Oldest to newest
+    return render(request, 'home/chat_room.html', {'messages': messages})
+
 def transfer_pokemon(request, name):
     if request.method == 'POST':
         user_id = request.POST.get('user')
@@ -413,4 +406,3 @@ def transfer_pokemon(request, name):
         return redirect('home.my_pokemon')
 
     return HttpResponse("Invalid request method", status=405)
-
