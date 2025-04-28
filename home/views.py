@@ -17,6 +17,8 @@ from django.shortcuts import redirect
 from .models import ListedPokemon
 from .forms import ListPokemonForm
 
+from .models import Message
+
 def index(request):
     template_data = {}
     template_data['title'] = 'PokeTrade'
@@ -366,3 +368,14 @@ def home_index(request):
         'notifications': notifications,
         'user': request.user  # Pass the user explicitly to the template
     })
+
+@login_required
+def chat_room(request):
+    if request.method == "POST":
+        text = request.POST.get("text")
+        if text:
+            Message.objects.create(user=request.user, text=text)
+            return redirect('chat_room')  # Redirect to refresh page after posting
+    
+    messages = Message.objects.order_by('timestamp')  # Oldest to newest
+    return render(request, 'home/chat_room.html', {'messages': messages})
